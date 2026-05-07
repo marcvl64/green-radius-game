@@ -42,7 +42,9 @@ function arcPath(cx, cy, rIn, rOut, a0, a1) {
 // Sectors render as 4 stacked rings (level 1 inner → level 4 outer).
 // Each ring cell has its own state: 'locked' | 'open' | 'green' | 'failed'.
 function Wheel({ sectors, levelStates, rotation, spinning, onSpin, canSpin, variant, palette }) {
-  const SIZE = 360;
+  // Internal SVG coordinate space. Wheel outer radius is 200, so SIZE needs at
+  // least 400 + headroom for the drop-shadow filter and dust-ring glow.
+  const SIZE = 420;
   const cx = SIZE / 2, cy = SIZE / 2;
   const ringRadii = [60, 100, 140, 180]; // inner edges; outer = next or 200
   const ringOuter = [100, 140, 180, 200];
@@ -63,7 +65,11 @@ function Wheel({ sectors, levelStates, rotation, spinning, onSpin, canSpin, vari
   };
 
   return (
-    <div style={{ position: 'relative', width: SIZE, height: SIZE, margin: '0 auto' }}>
+    <div style={{
+      position: 'relative',
+      width: '100%', maxWidth: 380, aspectRatio: '1 / 1',
+      margin: '0 auto',
+    }}>
       {/* outer dust ring */}
       {dim && (
         <div style={{
@@ -74,8 +80,9 @@ function Wheel({ sectors, levelStates, rotation, spinning, onSpin, canSpin, vari
       )}
 
       <svg
-        width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}
+        width="100%" height="100%" viewBox={`0 0 ${SIZE} ${SIZE}`}
         style={{
+          display: 'block',
           transform: `rotate(${rotation}deg)`,
           transition: spinning ? 'transform 4.2s cubic-bezier(0.17, 0.67, 0.16, 0.99)' : 'none',
           filter: dim ? 'drop-shadow(0 12px 28px rgba(40,20,10,0.35))' : 'drop-shadow(0 4px 12px rgba(40,20,10,0.18))',
