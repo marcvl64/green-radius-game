@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Vercel
+.vercel/
+
+# Logs / deps (none currently, but reserve)
+node_modules/
+*.log
+
+# Local design handoff bundle — large and not needed at runtime
+_design/
