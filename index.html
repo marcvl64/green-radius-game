@@ -31,6 +31,11 @@
   @keyframes qm-fade { from { opacity: 0; } to { opacity: 1; } }
   @keyframes qm-up   { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
+  /* Drop the slide-up transform for users who prefer reduced motion — keep the fade. */
+  @media (prefers-reduced-motion: reduce) {
+    @keyframes qm-up { from { opacity: 0; } to { opacity: 1; } }
+  }
+
   /* Responsive shell: full-bleed on mobile, phone-shaped frame on larger screens. */
   .grg-shell {
     width: 100%;

@@ -3,6 +3,27 @@
 
 const { useState, useEffect, useRef, useMemo, useCallback } = React;
 
+// ─── reduced motion ───────────────────────────────────────────────────────────
+// Wheel spin runs ~4.2s normally; for users with `prefers-reduced-motion: reduce`
+// we collapse it to a quick zip so the "the wheel chose for you" metaphor stays,
+// but vestibular-disorder users aren't subjected to a long rotation.
+const SPIN_MS_FULL = 4200;
+const SPIN_MS_REDUCED = 300;
+const SPIN_TIMEOUT_PADDING_MS = 100;
+
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(() =>
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handler = e => setReduced(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  return reduced;
+}
+
 // ─── icons ────────────────────────────────────────────────────────────────────
 function SectorIcon({ kind, size = 28, color = '#fff' }) {
   const s = size, sw = 1.8;
@@ -41,7 +62,7 @@ function arcPath(cx, cy, rIn, rOut, a0, a1) {
 // ─── the wheel ────────────────────────────────────────────────────────────────
 // Sectors render as 4 stacked rings (level 1 inner → level 4 outer).
 // Each ring cell has its own state: 'locked' | 'open' | 'green' | 'failed'.
-function Wheel({ sectors, levelStates, rotation, spinning, onSpin, canSpin, variant, palette }) {
+function Wheel({ sectors, levelStates, rotation, spinning, onSpin, canSpin, variant, palette, spinDurationMs }) {
   // Internal SVG coordinate space. Wheel outer radius is 200, so SIZE needs at
   // least 400 + headroom for the drop-shadow filter and dust-ring glow.
   const SIZE = 420;
@@ -84,7 +105,7 @@ function Wheel({ sectors, levelStates, rotation, spinning, onSpin, canSpin, vari
         style={{
           display: 'block',
           transform: `rotate(${rotation}deg)`,
-          transition: spinning ? 'transform 4.2s cubic-bezier(0.17, 0.67, 0.16, 0.99)' : 'none',
+          transition: spinning ? `transform ${spinDurationMs}ms cubic-bezier(0.17, 0.67, 0.16, 0.99)` : 'none',
           filter: dim ? 'drop-shadow(0 12px 28px rgba(40,20,10,0.35))' : 'drop-shadow(0 4px 12px rgba(40,20,10,0.18))',
         }}
       >
@@ -708,6 +729,9 @@ function GreenRadiusGame({ variant = 'dimensional', palette, debugFill = false }
   const [activeQuestion, setActiveQuestion] = useState(null); // {sector, level, questions}
   const [toast, setToast] = useState(null);
 
+  const reducedMotion = usePrefersReducedMotion();
+  const spinMs = reducedMotion ? SPIN_MS_REDUCED : SPIN_MS_FULL;
+
   // any sector still has a level to play?
   const allDone = sectors.every(s => sectorClosed[s.id] || sectorCursor[s.id] >= 4);
 
@@ -745,8 +769,8 @@ function GreenRadiusGame({ variant = 'dimensional', palette, debugFill = false }
       const lvl = sectorCursor[target.id];
       const questions = target.levels[lvl];
       setActiveQuestion({ sector: target, level: lvl, questions });
-    }, 4300);
-  }, [sectors, sectorCursor, sectorClosed, rotation]);
+    }, spinMs + SPIN_TIMEOUT_PADDING_MS);
+  }, [sectors, sectorCursor, sectorClosed, rotation, spinMs]);
 
   function handleAnswers(allYes, answers) {
     const { sector, level } = activeQuestion;
@@ -867,6 +891,7 @@ function GreenRadiusGame({ variant = 'dimensional', palette, debugFill = false }
         onSpin={onSpin}
         variant={variant}
         palette={palette}
+        spinDurationMs={spinMs}
       />
 
       {/* sector legend */}
