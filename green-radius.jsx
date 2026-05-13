@@ -638,6 +638,7 @@ function ShareCard({ sectors, levelStates, campName, leadName, year, palette }) 
 function Intro({ onStart, palette }) {
   const [campName, setCampName] = useState('');
   const [leadName, setLeadName] = useState('');
+  const [email, setEmail] = useState('');
   const [year, setYear] = useState('2026');
 
   return (
@@ -660,11 +661,12 @@ function Intro({ onStart, palette }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28, textAlign: 'left' }}>
         <Field label="Camp name" value={campName} onChange={setCampName} placeholder="e.g. Hotel California" palette={palette}/>
         <Field label="Sustainability lead" value={leadName} onChange={setLeadName} placeholder="e.g. Ash Rivera" palette={palette}/>
+        <Field label="Email (optional)" type="email" value={email} onChange={setEmail} placeholder="you@yourcamp.org" palette={palette}/>
         <Field label="Year" value={year} onChange={setYear} placeholder="2026" palette={palette}/>
       </div>
 
       <button
-        onClick={() => campName.trim() && onStart({ campName: campName.trim(), leadName: leadName.trim(), year })}
+        onClick={() => campName.trim() && onStart({ campName: campName.trim(), leadName: leadName.trim(), email: email.trim(), year })}
         disabled={!campName.trim()}
         style={{
           width: '100%', padding: '16px', borderRadius: 14,
@@ -682,13 +684,14 @@ function Intro({ onStart, palette }) {
   );
 }
 
-function Field({ label, value, onChange, placeholder, palette }) {
+function Field({ label, value, onChange, placeholder, palette, type = 'text' }) {
   return (
     <label style={{ display: 'block' }}>
       <div style={{ fontSize: 10, letterSpacing: '0.15em', fontWeight: 700, color: palette.text + '99', marginBottom: 4 }}>
         {label.toUpperCase()}
       </div>
       <input
+        type={type}
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
@@ -708,7 +711,7 @@ function Field({ label, value, onChange, placeholder, palette }) {
 function GreenRadiusGame({ variant = 'dimensional', palette, debugFill = false }) {
   const sectors = window.SECTORS;
   const [phase, setPhase] = useState('intro'); // intro | playing | done
-  const [camp, setCamp] = useState({ campName: '', leadName: '', year: '2026' });
+  const [camp, setCamp] = useState({ campName: '', leadName: '', email: '', year: '2026' });
 
   // levelStates[sectorId] = ['locked'|'open'|'green'|'failed', x4]
   const initState = useMemo(() => {
