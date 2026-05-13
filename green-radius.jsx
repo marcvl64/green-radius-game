@@ -657,7 +657,7 @@ function Intro({ onStart, palette }) {
       >Begin →</button>
 
       <div style={{ fontSize: 10, letterSpacing: '0.15em', color: palette.text + '66', marginTop: 24, fontWeight: 600 }}>
-        24 LEVELS · 60 QUESTIONS · 6 SECTORS
+        6 SECTORS · 4 LEVELS · 10 QUESTIONS
       </div>
     </div>
   );
